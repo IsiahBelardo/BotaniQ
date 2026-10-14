@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BOTANIQ — Crop Recommendation &amp; Growth Simulation</title>
+<meta name="description" content="BOTANIQ recommends tropical crops from soil, climate and space values and simulates how they grow. Built for Carmona, Cavite.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%23131416'/><text y='72' x='50' text-anchor='middle' font-size='64'>🌱</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#131416;--panel:#1d1f23;--card:#252729;--field:#2a2d33;--line:#383d45;--green:#42c759;--gbtn:#389e57;--glight:#9ef28c;--red:#db4d4d;--text:#f0f2f5;--mute:#9ea6b3}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth;scroll-padding-top:64px}
+body{background:var(--bg);color:var(--text);font:400 16px/1.6 "Open Sans",system-ui,sans-serif}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.bar{position:sticky;top:0;z-index:9;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:18px;padding:12px clamp(14px,3vw,32px);flex-wrap:wrap}
+.bar b{color:var(--green);font-size:18px;letter-spacing:.14em}
+.bar span{color:var(--mute);font-size:13px;flex:1;min-width:180px}
+.bar a{color:var(--mute);text-decoration:none;font-size:14px;padding:2px 4px}.bar a:hover{color:var(--text)}
+.hero{position:relative;height:min(78vh,640px);min-height:440px;overflow:hidden;border-bottom:1px solid var(--line)}
+#sky{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hero .in{position:relative;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:10px}
+.hero h1{font-size:clamp(44px,9vw,92px);font-weight:700;letter-spacing:.22em;margin-right:-.22em;color:#66eb80;text-shadow:0 0 2px #05120f,0 0 2px #05120f,0 3px 0 #05120f,0 8px 30px rgba(0,0,0,.55);line-height:1.05}
+.hero p{max-width:560px;color:#dfe9e6;text-shadow:0 1px 12px rgba(0,0,0,.7)}
+.hero .sub{font-size:19px;color:#fff;font-weight:600}
+.btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+.btn{font:600 15px "Open Sans",sans-serif;border:1px solid var(--line);background:var(--card);color:var(--text);padding:10px 20px;cursor:pointer;text-decoration:none;display:inline-block;border-radius:3px}
+.btn:hover{border-color:var(--green)}.btn.g{background:var(--gbtn);border-color:var(--gbtn)}.btn.g:hover{background:var(--green);border-color:var(--green);color:#06210e}
+main{max-width:1240px;margin:0 auto;padding:0 clamp(14px,3vw,32px)}
+section{padding:56px 0}
+h2{font-size:26px;font-weight:700;margin-bottom:6px}
+.lead{color:var(--mute);max-width:640px;margin-bottom:24px}
+#recbar{background:var(--panel);border:1px solid var(--line);padding:12px 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;min-height:56px;margin-bottom:10px}
+#recbar .msg{color:var(--green);font-weight:600;font-size:14px}#recbar .msg.bad{color:var(--red)}
+.chip{font:600 13px "Open Sans",sans-serif;background:var(--card);color:var(--text);border:1px solid var(--line);padding:6px 12px;cursor:pointer;border-radius:3px}
+.chip i{font-style:normal;color:var(--green);margin-left:8px}.chip.on{border-color:var(--green);background:#1f3a29}
+.app{display:grid;grid-template-columns:minmax(300px,.365fr) 1fr;gap:10px}
+@media(max-width:860px){.app{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);padding:16px}
+.card h3{font-size:13px;font-weight:700;color:var(--green);margin:14px 0 8px}.card h3:first-child{margin-top:0}
+.row{display:grid;grid-template-columns:1fr 104px;gap:8px;align-items:center;margin-bottom:8px}
+.row label{font-size:14px}.row small{display:block;color:var(--mute);font-size:11.5px;line-height:1.2}
+input{width:100%;background:var(--field);color:var(--text);border:1px solid var(--line);padding:7px 9px;font:600 14px "Open Sans",sans-serif;border-radius:2px}
+input:focus{border-color:var(--green);outline:none}
+.wx{display:flex;gap:8px;margin:2px 0 6px}.wx .btn{padding:6px 14px;font-size:13px;flex:1}
+#wxnote{font-size:12px;color:var(--mute);min-height:18px;margin-bottom:6px}
+.act{display:flex;gap:10px;margin-top:14px}.act .btn{flex:1}.act .red{background:#b33838;border-color:#b33838}.act .red:hover{background:var(--red);border-color:var(--red)}
+.view{border:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;min-height:420px}
+#sim{width:100%;flex:1;min-height:300px;display:block;background:linear-gradient(#0e2a3c,#1b5a64 62%,#e9b16c)}
+.strip{border-top:1px solid var(--line);padding:12px 16px;display:grid;grid-template-columns:auto 1fr auto;gap:6px 14px;align-items:center;font-size:13px}
+.track{height:9px;background:#1c2420;border-radius:9px;position:relative;overflow:hidden}.track u{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--green),var(--glight));border-radius:9px;width:0}
+.info{grid-column:1/-1;color:var(--mute);font-size:13px;white-space:pre-line}.info b{color:var(--text)}
+.strip .btn{padding:4px 14px;font-size:13px}
+.crops{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.crops .card{padding:12px 14px}.crops b{display:block}.crops span{color:var(--mute);font-size:13px}
+pre{background:var(--panel);border:1px solid var(--line);padding:16px;overflow-x:auto;font:13.5px/1.7 ui-monospace,Menlo,Consolas,monospace;color:#cfe9d4}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:28px}@media(max-width:860px){.two{grid-template-columns:1fr}}
+.two p{color:var(--mute);margin-bottom:10px}.two p b{color:var(--text)}
+footer{border-top:1px solid var(--line);background:var(--panel);color:var(--mute);font-size:13px;text-align:center;padding:22px}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="bar"><b>BOTANIQ</b><span>Crop Recommendation &amp; Growth Simulation</span><a href="#crops">Crops</a><a href="#run">Run it</a><a href="BOTANIQ.py" download>BOTANIQ.py</a></div>
+
+<header class="hero">
+<canvas id="sky" aria-hidden="true"></canvas>
+<div class="in">
+<h1>BOTANIQ</h1>
+<p class="sub">Crop Recommendation &amp; Growth Simulation</p>
+<p>Enter your soil, climate and space values. BOTANIQ ranks the crops that will survive them and grows each one on screen. Tuned to Carmona, Cavite, with live local weather.</p>
+<div class="btns"><a class="btn g" href="BOTANIQ.py" download>Download BOTANIQ.py</a><a class="btn" id="gh" href="https://github.com/IsiahBelardo/BotaniQ">View on GitHub</a></div>
+</div>
+</header>
+
+<main>
+<section id="crops">
+<h2>Twelve crops, scored on eight factors</h2>
+<p class="lead">Nitrogen, phosphorus, potassium, pH, moisture, temperature, sunlight and planting space.</p>
+<div class="crops" id="cropgrid"></div>
+</section>
+
+<section class="two">
+<div><h2>How it decides</h2>
+<p><b>Suitability.</b> Each value is compared with the crop's preferred range. Inside it scores 1; outside it falls away smoothly, and the weighted factors are multiplied into a 0–100 score.</p>
+<p><b>Survival.</b> A crop that is far enough out on temperature, moisture, pH or light, or burned by too much fertilizer, is ruled out, whatever its score. If nothing survives, the app says so.</p>
+<p><b>Growth.</b> Vigor comes from the same factors, so a poor match grows short and sparse and a bad one dies.</p></div>
+<div id="run"><h2>Run it on your computer</h2>
+<p>Python 3 with these packages:</p>
+<pre>pip install ursina pillow pygame
+python BOTANIQ.py</pre>
+<p>Put the crop pictures in an <b>images</b> folder and <b>botaniq_logo.png</b> next to the script. English and Filipino are both built in.</p></div>
+</section>
+</main>
+<footer>BOTANIQ · Crop recommendation and growth simulation · Carmona, Cavite</footer>
+
+<script>
+const $=s=>document.querySelector(s),clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+/* name, short, type, growth, uses, ph, temp, moist, N, P, K, space, weights[temp,ph,moist,n,p,k,sun,space], kind, fruit colour, days */
+const C=[
+["Green Corn (Sweet Corn)","Corn","Cereal crop","65–90 days","Food, feed, grain",[5.8,7],[20,32],[55,75],120,60,40,.22,[.16,.09,.14,.18,.10,.10,.14,.09],"stalk","#f2c94c",90],
+["Eggplant (Talong)","Eggplant","Fruit vegetable","80–100 days","Cooking, home gardens",[5.5,6.5],[25,35],[55,75],100,50,50,.55,[.15,.13,.15,.12,.08,.10,.17,.10],"bush","#6b3fa0",100],
+["Tomato (Kamatis)","Tomato","Fruit vegetable","70–90 days","Cooking, commercial farming",[5.5,6.8],[22,32],[45,65],120,60,60,.36,[.15,.13,.16,.13,.09,.10,.15,.09],"bush","#e0452f",90],
+["Bitter Gourd (Ampalaya)","Ampalaya","Fruit vegetable","55–65 days","Soups, stir-fry",[5.5,6.7],[22,32],[50,70],90,60,60,1.25,[.15,.10,.16,.10,.10,.10,.15,.14],"vine","#8fc75a",65],
+["Okra","Okra","Fruit vegetable","55–65 days","Salads, sauces",[6,6.8],[22,32],[50,70],80,40,40,.26,[.16,.11,.14,.13,.08,.10,.17,.11],"bush","#7fbf4d",65],
+["String Beans (Sitaw)","Sitaw","Legume vegetable","55–65 days","Cooking, stir-fry",[5.5,6.5],[22,32],[50,70],60,40,40,.25,[.15,.10,.15,.08,.10,.10,.15,.17],"vine","#a6d36b",65],
+["Squash (Kalabasa)","Kalabasa","Fruit vegetable","90–120 days","Cooking, commercial farming",[5.5,6.8],[22,32],[50,70],90,60,60,2.5,[.14,.10,.16,.10,.10,.10,.15,.15],"vine","#e8a33d",120],
+["Bottle Gourd (Upo)","Upo","Fruit vegetable","55–70 days","Cooking, traditional use",[5.5,6.5],[24,32],[50,70],80,40,40,1,[.15,.10,.16,.10,.10,.10,.15,.14],"vine","#bfe08a",70],
+["Chili (Siling Panigang/Labuyo)","Chili","Fruit vegetable","90–120 days","Cooking, condiments",[5.5,6.8],[22,32],[50,70],100,50,50,.36,[.15,.13,.13,.12,.09,.11,.17,.10],"bush","#e03a2a",120],
+["Banana (Saging)","Banana","Fruit tree","9–12 months","Fresh fruit, export",[5.5,7],[22,32],[70,90],200,60,200,6.25,[.14,.08,.20,.10,.06,.20,.12,.10],"palm","#f0d24a",360],
+["Papaya","Papaya","Fruit tree","6–9 months","Fresh fruit, farming",[6,6.5],[24,32],[50,70],150,50,100,6.25,[.16,.13,.14,.13,.07,.14,.14,.09],"palm","#f09a3a",270],
+["Mango (Mangga)","Mango","Fruit tree","3–5 years","Fresh fruit, export",[5.5,7.5],[24,35],[40,60],500,200,300,81,[.15,.10,.13,.08,.06,.08,.16,.24],"tree","#f2b441",1825]
+].map(a=>({name:a[0],short:a[1],type:a[2],grow:a[3],uses:a[4],ph:a[5],temp:a[6],moisture:a[7],n:[a[8],a[8]],p:[a[9],a[9]],k:[a[10],a[10]],sunlight:[6,8],space:a[11],w:a[12],kind:a[13],fc:a[14],days:a[15]}));
+const rgb=a=>`rgb(${a})`;
+
+/* ---------- crop grid ---------- */
+$("#cropgrid").innerHTML=C.map(c=>`<div class="card"><b>${c.short}</b><span>${c.type} · ${c.grow}<br>pH ${c.ph[0]}–${c.ph[1]} · ${c.temp[0]}–${c.temp[1]} °C · soil ${c.moisture[0]}–${c.moisture[1]}%</span></div>`).join("");
+
+/* ---------- hero: painted sky, storm to sunrise ---------- */
+const cv=$("#sky"),cx2=cv.getContext("2d"),still=matchMedia("(prefers-reduced-motion: reduce)").matches;
+let W,Hh,clouds=[...Array(7)].map((_,i)=>({x:Math.random(),y:.08+Math.random()*.3,s:.7+Math.random()*.9,v:.004+Math.random()*.006})),drops=[...Array(90)].map(()=>({x:Math.random(),y:Math.random(),v:.9+Math.random()*.6}));
+function size(){const d=devicePixelRatio||1;W=cv.clientWidth;Hh=cv.clientHeight;cv.width=W*d;cv.height=Hh*d;cx2.setTransform(d,0,0,d,0,0)}
+addEventListener("resize",size);size();
+const L=(a,b,t)=>a.map((x,i)=>Math.round(x+(b[i]-x)*t));
+function sky(t){
+ const k=still?0:clamp(.5+.75*Math.cos(t/26*6.2832),0,1),g=Math.min(1,(1-k)*1.1);
+ const gr=cx2.createLinearGradient(0,0,0,Hh*.75),A=[[12,17,24],[40,52,62],[92,104,112]],B=[[14,40,70],[40,106,128],[255,208,140]];
+ [0,.5,1].forEach((p,i)=>gr.addColorStop(p,rgb(L(A[i],B[i],1-k))));cx2.fillStyle=gr;cx2.fillRect(0,0,W,Hh);
+ const sg=cx2.createRadialGradient(W*.18,Hh*.5,0,W*.18,Hh*.5,Hh*.7);sg.addColorStop(0,`rgba(255,214,120,${.75*(1-k)})`);sg.addColorStop(1,"rgba(255,214,120,0)");cx2.fillStyle=sg;cx2.fillRect(0,0,W,Hh);
+ clouds.forEach(c=>{c.x=(c.x+c.v*(still?0:.016))%1.3;const x=(c.x-.15)*W,y=c.y*Hh,r=70*c.s,a=.35+.5*k;for(let j=0;j<4;j++){const q=cx2.createRadialGradient(x+j*r*.7,y,0,x+j*r*.7,y,r);const col=k>.5?"150,162,170":"255,255,255";q.addColorStop(0,`rgba(${col},${a})`);q.addColorStop(1,`rgba(${col},0)`);cx2.fillStyle=q;cx2.fillRect(x+j*r*.7-r,y-r,r*2,r*2)}});
+ cx2.fillStyle="#1b3a3a";cx2.beginPath();cx2.moveTo(0,Hh);for(let x=0;x<=W;x+=12)cx2.lineTo(x,Hh*.66+Math.sin(x/W*13+.4)*Hh*.035);cx2.lineTo(W,Hh);cx2.fill();
+ cx2.fillStyle="#1e5440";cx2.beginPath();cx2.moveTo(0,Hh);for(let x=0;x<=W;x+=12)cx2.lineTo(x,Hh*.74+Math.sin(x/W*21+2)*Hh*.025);cx2.lineTo(W,Hh);cx2.fill();
+ const hz=Hh*.8;cx2.fillStyle="#266c3a";cx2.fillRect(0,hz,W,Hh);
+ for(let i=-20;i<20;i++){cx2.fillStyle=i%2?"#215e34":"#2e7e46";cx2.beginPath();cx2.moveTo(W/2+i*9,hz);cx2.lineTo(W/2+(i+1)*9,hz);cx2.lineTo(W/2+(i+1)*W/9,Hh);cx2.lineTo(W/2+i*W/9,Hh);cx2.fill()}
+ for(let i=0;i<9;i++){const x=W*(.08+i*.105),y=Hh*.93-(i%3)*Hh*.03,s=g*(.4+.6*((i*37)%10)/10)*Hh*.075;cx2.strokeStyle="#6fe27f";cx2.lineWidth=2.5;cx2.beginPath();cx2.moveTo(x,y);cx2.lineTo(x,y-s);cx2.stroke();cx2.fillStyle="#58d26c";[-1,1].forEach(d=>{cx2.beginPath();cx2.ellipse(x+d*s*.28,y-s,s*.28,s*.13,d*-.5,0,7);cx2.fill()})}
+ if(k>.12){cx2.strokeStyle=`rgba(190,215,235,${.55*k})`;cx2.lineWidth=1.2;cx2.beginPath();drops.forEach(d=>{d.y=(d.y+d.v*.016*(still?0:1))%1;const x=d.x*W,y=d.y*Hh;cx2.moveTo(x,y);cx2.lineTo(x-3,y+14)});cx2.stroke()}
+ const pl=cx2.createRadialGradient(W/2,Hh*.5,0,W/2,Hh*.5,Math.min(W,760)*.55);pl.addColorStop(0,"rgba(4,9,11,.55)");pl.addColorStop(1,"rgba(4,9,11,0)");cx2.fillStyle=pl;cx2.fillRect(0,0,W,Hh);
+}
+(function go(ms){sky(ms/1000);if(!still)requestAnimationFrame(go)})(0);
+if(still)sky(0);
+</script>
+</body>
+</html>
