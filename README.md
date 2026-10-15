@@ -3,8 +3,7 @@
 Crop recommendation and growth simulation for tropical crops, tuned to Carmona, Cavite.
 
 - `BOTANIQ.py` is the desktop app (Python, Ursina).
-- `index.html` is the GitHub Pages site with a live demo of the recommender.
-
+- `index.html` is the GitHub Pages site
 ## Run the app
 
     pip install ursina pillow pygame
